@@ -30,8 +30,6 @@ def round_robin_schedule(num_teams):
 	if num_teams % 2 == 1:
 		top_row.append("BYE")
 
-	print(top_row, bot_row)
-
 	# Weird range- want to have a week 1 and not a week 0. In addition number
 	# of weeks is dependent on the number on both the number of teams but also
 	# the parity as odd teams will take one more. Adding the dummy guarentees 
@@ -64,9 +62,23 @@ def round_robin_schedule(num_teams):
 def rotate(list, n):
     return list[-n:] + list[:-n]
 
-def main():
-	generated_schedule = schedule(5)
-	print(generated_schedule)
+# Utility function- given a team and schedule, it tells you who they play on
+# that specific week
+def check_opponent(team, schedule, week=1):
+	weekly_schedule = schedule[week]
+
+	for match in weekly_schedule:
+		if team in match:
+			if team == match[0]:
+				return match[1]
+			else:
+				return match[0]
+
+	# TODO add error handling here
+
+#def main():
+	#generated_schedule = schedule(5)
+	#print(generated_schedule)
 
 if __name__ == "__main__":
     # execute only if run as a script
