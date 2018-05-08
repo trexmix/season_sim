@@ -4,7 +4,9 @@
 ###############################################################################
 
 import unittest
+
 import season_sim as ss
+import team
 
 class TestRRScheduling(unittest.TestCase):
     # We set up a 5 team round robin schedule. Should generalize this method
@@ -36,6 +38,28 @@ class TestRRScheduling(unittest.TestCase):
             with self.subTest(team=team):
                 self.assertFalse(any(opponents.count(x) > 1 for x in opponents))
                 self.assertEqual(set(opponents), set(correct_opponents))
+
+
+class TestMatchups(unittest.TestCase):
+    def setUp(self):
+        self.teams = []
+
+        self.teams.append(team.Team("Team A"))
+        self.teams.append(team.Team("Team B"))
+
+    def test_single_matchup(self):
+        # Test a single game in which the home team wins
+        ss.simulate_matchup(self.teams[0], self.teams[1], ss.home_win)
+
+        # Ensure team stats are correct
+        self.assertEqual(self.teams[0].results['win'], 1)
+        self.assertEqual(self.teams[0].results['loss'], 0)
+        self.assertEqual(self.teams[0].results['tie'], 0)
+
+        self.assertEqual(self.teams[1].results['win'], 0)
+        self.assertEqual(self.teams[1].results['loss'], 1)
+        self.assertEqual(self.teams[1].results['win'], 0)
+
 
 
 class TestUtilities(unittest.TestCase):

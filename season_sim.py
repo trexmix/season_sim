@@ -1,5 +1,8 @@
 from enum import Enum
 
+import team
+import random
+
 # TODO parse args
 
 class ScheduleType(Enum):
@@ -7,11 +10,25 @@ class ScheduleType(Enum):
 	DOUBLE_ROUND_ROBIN = 2
 	SINGLE_ELIMINATION = 3
 
+class MatchupResult(Enum):
+	HOME_WIN = 1
+	AWAY_WIN = 2
+	TIE = 3
+
 def schedule(num_teams, type=ScheduleType.ROUND_ROBIN):
 	# TODO schedule types, validate num_teams (do we do that in this function, 
 	# or a higher one?)
 
 	# Should we shuffle teams?
+
+	'''
+		This produces a schedule of the form map<int, list<tuple>>
+
+		It maps week numbers to the weekly schedule for that week
+
+		Weekly schedules are just lists of tuples containing the two teams 
+		that are playing
+	'''
 	return round_robin_schedule(num_teams)
 
 # This is based on the first algorithm found at 
@@ -56,6 +73,37 @@ def round_robin_schedule(num_teams):
 		bot_row[-1] = tmp
 
 	return schedule
+
+# A basic matchup simulator
+def flip_coin(home, away):
+	flip = random.randint(0, 1)
+
+	return (1, 0) if flip == 0 else (0, 1)
+
+def simulate_matchup(home, away, simulator=flip_coin):
+	'''
+	Simulates a matchup using the simulator function and updates home and away
+	team results
+
+	Simulator takes in home, away team objects and returns a tuple of the form
+	(home_score, away_score)
+	'''
+
+	home_score, away_score = simulator(home, away)
+
+	if home_score > away_score:
+		home.results['win'] += 1
+		away.results['loss'] += 1
+	elif home_score < away_score:
+		home.results['loss'] += 1
+		away.results['win'] += 1
+	elif home_score == away_score:
+		home.results['tie'] += 1
+		away.results['tie'] += 1
+
+def home_win(home, away):
+	return (1, 0)
+
 
 # https://stackoverflow.com/questions/9457832/python-list-rotation gives this
 # function- it rotates a list n positions to the right
