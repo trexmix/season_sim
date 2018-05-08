@@ -46,6 +46,11 @@ class TestMatchups(unittest.TestCase):
 
         self.teams.append(team.Team("Team A"))
         self.teams.append(team.Team("Team B"))
+        self.teams.append(team.Team("Team C"))
+        self.teams.append(team.Team("Team D"))
+        self.teams.append(team.Team("Team E"))
+
+        self.schedule = ss.round_robin_schedule(5)
 
     def test_single_matchup(self):
         # Test a single game in which the home team wins
@@ -60,7 +65,24 @@ class TestMatchups(unittest.TestCase):
         self.assertEqual(self.teams[1].results['loss'], 1)
         self.assertEqual(self.teams[1].results['win'], 0)
 
+    def test_season(self):
+        ss.state['teams'] = self.teams
 
+        ss.simulate_season(self.schedule)
+
+        wins = 0
+        losses = 0
+
+        # Iterate through every team and make sure they've played 4 games
+        for team in ss.state['teams']:
+            #print(teams.name, " ", teams.results)
+            self.assertEqual(sum(team.results.values()), 4)
+
+            wins += team.results['win']
+            losses += team.results['loss']
+
+        # Make sure we have the same number of wins and losses
+        self.assertEqual(wins, losses)
 
 class TestUtilities(unittest.TestCase):
     def test_rotation(self):

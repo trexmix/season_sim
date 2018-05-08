@@ -5,6 +5,10 @@ import random
 
 # TODO parse args
 
+# Contains the state of the current simulation- teams, week, right now
+state = {}
+state['teams'] = []
+
 class ScheduleType(Enum):
 	ROUND_ROBIN = 1
 	DOUBLE_ROUND_ROBIN = 2
@@ -88,7 +92,6 @@ def simulate_matchup(home, away, simulator=flip_coin):
 	Simulator takes in home, away team objects and returns a tuple of the form
 	(home_score, away_score)
 	'''
-
 	home_score, away_score = simulator(home, away)
 
 	if home_score > away_score:
@@ -100,6 +103,16 @@ def simulate_matchup(home, away, simulator=flip_coin):
 	elif home_score == away_score:
 		home.results['tie'] += 1
 		away.results['tie'] += 1
+
+def simulate_week(schedule, week):
+	for home, away in schedule[week]:
+		# If the matchup does not involve a bye, we need to simulate it
+		if ('BYE' not in (home, away)):
+			simulate_matchup(state['teams'][home], state['teams'][away])
+
+def simulate_season(schedule):
+	for week in range(1, len(schedule) + 1):
+		simulate_week(schedule, week)
 
 def home_win(home, away):
 	return (1, 0)
