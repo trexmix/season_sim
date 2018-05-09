@@ -4,8 +4,10 @@
 ###############################################################################
 
 import unittest
+import os
 
 import season_sim as ss
+import season_sim_io as ss_io
 import team
 
 class TestRRScheduling(unittest.TestCase):
@@ -87,7 +89,66 @@ class TestMatchups(unittest.TestCase):
 class TestUtilities(unittest.TestCase):
     def test_rotation(self):
         l = [1, 2, 3]
-        self.assertEqual(ss.rotate(l, 1), [3, 1, 2])            
+        self.assertEqual(ss.rotate(l, 1), [3, 1, 2])    
+
+class TestIO(unittest.TestCase):
+        
+    def setUp(self):
+        # We need to remove old dump to ensure that we are writing to a clean
+        # file
+        if os.path.isfile("testing.ssd"):
+            os.remove("testing.ssd")
+
+        self.teams = []
+
+        self.teams.append(team.Team("Team A"))
+        self.teams.append(team.Team("Team B"))
+        self.teams.append(team.Team("Team C"))
+        self.teams.append(team.Team("Team D"))
+        self.teams.append(team.Team("Team E"))
+
+        self.schedule = ss.round_robin_schedule(5)
+
+        self.state = {}
+        self.state['teams'] = self.teams
+        self.state['schedule'] = self.schedule
+        self.state['current_week'] = 0
+
+    def tearDown(self):
+        # Don't want any traces of testing
+        if os.path.isfile("testing.ssd"):
+            os.remove("testing.ssd")
+
+    def test_save(self): 
+        ss_io.save_state(self.state, "testing.ssd")
+
+        # Initially, we just want to check that the output is *something*
+        # May add more testing later but it seems to work
+        self.assertTrue(os.path.isfile("testing.ssd"))
+
+    def test_loading_init_data(self):
+        ss_io.save_state(self.state, "testing.ssd")
+        new_state = ss_io.load_state("testing.ssd")
+
+        # Note that we have edited team class to check for deep equality rather
+        # than shallow equality
+        self.assertTrue(new_state == self.state)
+
+    def test_loading_mid_season(self):
+        ss.state['teams'] = self.teams
+
+        ss.simulate_week(self.schedule, 1)
+        ss.simulate_week(self.schedule, 2)
+
+        ss_io.save_state(self.state, "testing.ssd")
+        new_state = ss_io.load_state("testing.ssd")
+
+        # TODO: weird inconsistencies where we have some objects in ss's state
+        # object while others are free. Need to check against season sim's
+        # state because the teams will be updated
+        self.assertTrue(new_state['teams'] == ss.state['teams'])
+
+
 
 if __name__ == '__main__':
     unittest.main()

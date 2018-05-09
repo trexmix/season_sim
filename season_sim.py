@@ -2,12 +2,18 @@ from enum import Enum
 
 import team
 import random
+import season_sim_io as ss_io
 
 # TODO parse args
 
 # Contains the state of the current simulation- teams, week, right now
 state = {}
 state['teams'] = []
+state['schedule'] = {}
+state['current_week'] = 0
+# A list of games- should have home team, away team, home score, and
+# away score
+state['game_log'] = []
 
 class ScheduleType(Enum):
 	ROUND_ROBIN = 1
@@ -104,6 +110,15 @@ def simulate_matchup(home, away, simulator=flip_coin):
 		home.results['tie'] += 1
 		away.results['tie'] += 1
 
+	game = {
+		'home_team': home.name,
+		'away_team': away.name,
+		'home_score': home_score,
+		'away_score': away_score,
+	}
+
+	state['game_log'].append()
+
 def simulate_week(schedule, week):
 	for home, away in schedule[week]:
 		# If the matchup does not involve a bye, we need to simulate it
@@ -111,10 +126,12 @@ def simulate_week(schedule, week):
 			simulate_matchup(state['teams'][home], state['teams'][away])
 
 def simulate_season(schedule):
+	# Go through each week in the schedule
 	for week in range(1, len(schedule) + 1):
 		simulate_week(schedule, week)
 
 def home_win(home, away):
+	# Basic schedule to always have the home team win for debugging
 	return (1, 0)
 
 
