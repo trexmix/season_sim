@@ -8,11 +8,13 @@ import season_sim_io as ss_io
 
 # Contains the state of the current simulation- teams, week, right now
 state = {}
+
+state['active'] = False
 state['teams'] = []
 state['schedule'] = {}
 state['current_week'] = 0
 # A list of games- should have home team, away team, home score, and
-# away score
+# away score. Not implemented
 state['game_log'] = []
 
 class ScheduleType(Enum):
@@ -25,7 +27,17 @@ class MatchupResult(Enum):
 	AWAY_WIN = 2
 	TIE = 3
 
-def schedule(num_teams, type=ScheduleType.ROUND_ROBIN):
+# This should run whenever intepreter is fired up
+def startup():
+	state['active'] = False
+	state['teams'] = []
+	state['schedule'] = {}
+	state['current_week'] = 0
+	# A list of games- should have home team, away team, home score, and
+	# away score. Not implemented
+	state['game_log'] = []
+
+def schedule(num_teams=0, type=ScheduleType.ROUND_ROBIN):
 	# TODO schedule types, validate num_teams (do we do that in this function, 
 	# or a higher one?)
 
@@ -39,6 +51,12 @@ def schedule(num_teams, type=ScheduleType.ROUND_ROBIN):
 		Weekly schedules are just lists of tuples containing the two teams 
 		that are playing
 	'''
+
+	# If number of teams is default argument, check the state to see how many
+	# teams we should schedule for
+	if num_teams == 0:
+		num_teams = len(state['teams'])
+
 	return round_robin_schedule(num_teams)
 
 # This is based on the first algorithm found at 
@@ -82,6 +100,7 @@ def round_robin_schedule(num_teams):
 		top_row[1] = bot_row[-1]
 		bot_row[-1] = tmp
 
+	state['schedule'] = schedule
 	return schedule
 
 # A basic matchup simulator
@@ -153,6 +172,22 @@ def check_opponent(team, schedule, week=1):
 				return match[0]
 
 	# TODO add error handling here
+
+def get_weekly_schedule(week=0):
+	if (week == 0):
+		week = state['current_week']
+
+	return state['schedule'][week]
+
+def add_team_to_state(team_name, team_off, team_def):
+	state['teams'].append(team.Team(team_name, offense=team_off, defense=team_def))
+
+def confirm_schedule(schedule):
+	state['schedule'] = schedule
+
+def init_league():
+	state['active'] = True
+	state['current_week'] = 1
 
 #def main():
 	#generated_schedule = schedule(5)
