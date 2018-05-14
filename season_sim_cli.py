@@ -6,6 +6,7 @@
 
 import season_sim as ss
 import team as team
+import os.path
 
 def startup():
 	print("Welcome to season sim!")
@@ -20,8 +21,6 @@ def idle():
 	while True:
 		cmd = input("SS intepreter 0.1 -> ").lower()
 
-		print(cmd)
-
 		if cmd == "n" or cmd =="new":
 			if is_active_league():
 				# TODO implement errors
@@ -32,6 +31,30 @@ def idle():
 
 		if cmd == "c" or cmd == "check":
 			check_status()
+
+		if cmd == "s" or cmd == "save":
+			if is_active_league():
+				save_league()
+
+			else:
+				print("No active league- cannot save")
+
+		if cmd == "l" or cmd == "load":
+			if is_active_league():
+				# Double check with user if they already have an active league
+				confirm = input("League already active- really load new one -> ").lower()
+
+				if confirm == "yes" or confirm == "y":
+					load_league()
+			else:
+				load_league()
+
+		if cmd == "w" or cmd == "week":
+			if is_active_league():
+				ss.simulate_week()
+			else:
+				print("No active league to simulate")
+
 
 # This is often run as a check for commands that depend on if a league is 
 # currently loaded or not
@@ -52,7 +75,7 @@ def new_league():
 		status = get_new_team()
 
 	# Now, make the schedule
-	league_type = input("What type of league would you like? RR, DRR, or SE?")
+	league_type = input("What type of league would you like? RR, DRR, or SE -> ")
 	league_type_enum = ss.ScheduleType.ROUND_ROBIN
 
 	# Insert logic for switching league type
@@ -92,6 +115,7 @@ def get_new_team():
 	return True
 
 def check_status():
+	# This just outputs a quick look at the current league teams and schedule
 	if not is_active_league():
 		print("No league loaded")
 		return
@@ -108,6 +132,23 @@ def check_status():
 		if 'BYE' not in matchup:
 			print("%s vs. %s" % (ss.state['teams'][matchup[0]].name,
 			 	ss.state['teams'][matchup[1]].name))
+
+def save_league():
+	save_name = input("What would you like to name your league save -> ")
+	ss.save(save_name)
+
+	print("League saved!")
+
+def load_league():
+	# TODO: print a list for the user to choose from
+	ssf_file_name = input("What league would you like to load? ")
+
+	if os.path.isfile("%s.ssf" % ssf_file_name):
+		ss.load(ssf_file_name)
+		print("League loaded!")
+	else:
+		print("No file with name %s.ssf exists" % ssf_file_name)
+
 
 
 # Number validation tool stolen from 

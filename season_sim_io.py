@@ -73,9 +73,9 @@ def load_state(save_name):
 	serialized_state = {}
 
 	with open(save_name, "r") as save_file:
-		serializable_state = json.load(save_file)
+		serialized_state = json.load(save_file)
 
-	return convert_from_serialized(serializable_state)
+	return convert_from_serialized(serialized_state)
 
 
 

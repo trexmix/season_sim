@@ -136,13 +136,25 @@ def simulate_matchup(home, away, simulator=flip_coin):
 		'away_score': away_score,
 	}
 
-	state['game_log'].append()
+	#state['game_log'].append()
 
-def simulate_week(schedule, week):
+def simulate_week(schedule=None, week=None, advance=True):
+	# Default variables will lead to the simulator drawing it from the current
+	# state
+	if (schedule == None):
+		schedule = state['schedule']
+
+	if (week == None):
+		week = state['current_week']
+
+
 	for home, away in schedule[week]:
 		# If the matchup does not involve a bye, we need to simulate it
 		if ('BYE' not in (home, away)):
 			simulate_matchup(state['teams'][home], state['teams'][away])
+
+		if advance:
+			state['current_week'] += 1
 
 def simulate_season(schedule):
 	# Go through each week in the schedule
@@ -188,6 +200,18 @@ def confirm_schedule(schedule):
 def init_league():
 	state['active'] = True
 	state['current_week'] = 1
+
+def save(save_name):
+	ss_io.save_state(state, "%s.ssf" % save_name)
+
+def load(ssf_file_name):
+	# Needs to declare state as global or it will just create a local copy
+	# of state that is destroyed at the end of the function
+	global state
+
+	state = ss_io.load_state("%s.ssf" % ssf_file_name)
+
+	state['active'] = True
 
 #def main():
 	#generated_schedule = schedule(5)
