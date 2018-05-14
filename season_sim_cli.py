@@ -51,10 +51,83 @@ def idle():
 
 		if cmd == "w" or cmd == "week":
 			if is_active_league():
-				ss.simulate_week()
+				sim_week()
 			else:
 				print("No active league to simulate")
 
+		if cmd == "t" or cmd == "table":
+			if is_active_league():
+				print_table()
+			else:
+				print("No active league to show standings for")
+
+# Simulates games and then prints the output
+def sim_week():
+	games = ss.simulate_week()
+
+	for matchup in games:
+		print("%s %d-%d %s" % (matchup[0], matchup[1], matchup[3], matchup[2]))
+
+def print_table():
+	top_row = get_header()
+
+	print(top_row)
+
+	print(get_second_row())
+
+	for team in ss.state['teams']:
+		print(get_team_table_row(team))
+	
+
+def get_header():
+	longest_name = length_of_longest_name()
+
+	list_to_stringify = []
+
+	list_to_stringify.append("Name")
+
+	for i in range(longest_name - 4):
+		list_to_stringify.append(" ")
+
+	list_to_stringify.append("|")
+
+	list_to_stringify.append(" W | L | T | Pts")
+
+	return ''.join(list_to_stringify)
+
+def get_second_row():
+	longest_name = length_of_longest_name()
+
+	list_to_stringify = []
+
+	for i in range(longest_name):
+		list_to_stringify.append("-")
+
+	list_to_stringify.append("+")
+
+	list_to_stringify.append("---+---+---+----")
+
+	return ''.join(list_to_stringify)
+
+def get_team_table_row(team):
+	list_to_stringify = []
+
+	list_to_stringify.append(team.name)
+
+	for i in range(length_of_longest_name() - len(team.name)):
+		list_to_stringify.append(" ")
+
+	list_to_stringify.append("|")
+
+	return ''.join(list_to_stringify)
+
+def length_of_longest_name():
+	longest_name = 0
+
+	for team in ss.state['teams']:
+		longest_name = max(longest_name, len(team.name))
+
+	return longest_name
 
 # This is often run as a check for commands that depend on if a league is 
 # currently loaded or not

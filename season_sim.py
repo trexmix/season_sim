@@ -136,25 +136,33 @@ def simulate_matchup(home, away, simulator=flip_coin):
 		'away_score': away_score,
 	}
 
+	return (home.name, home_score, away.name, away_score)
+
 	#state['game_log'].append()
 
 def simulate_week(schedule=None, week=None, advance=True):
 	# Default variables will lead to the simulator drawing it from the current
-	# state
+	# state. Returns tuple of (home, home score, away, away score) to give the 
+	# various GUIs the ability to display the results of the week
+	
 	if (schedule == None):
 		schedule = state['schedule']
 
 	if (week == None):
 		week = state['current_week']
 
+	games = []
 
 	for home, away in schedule[week]:
 		# If the matchup does not involve a bye, we need to simulate it
 		if ('BYE' not in (home, away)):
-			simulate_matchup(state['teams'][home], state['teams'][away])
+			games.append(simulate_matchup(state['teams'][home], state['teams'][away]))
+
 
 		if advance:
 			state['current_week'] += 1
+
+	return games
 
 def simulate_season(schedule):
 	# Go through each week in the schedule
