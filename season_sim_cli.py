@@ -6,6 +6,7 @@
 
 import season_sim as ss
 import team as team
+import season_sim_errors as ss_err
 import os.path
 
 def startup():
@@ -63,7 +64,11 @@ def idle():
 
 # Simulates games and then prints the output
 def sim_week():
-	games = ss.simulate_week()
+	try:
+		games = ss.simulate_week()
+	except ss_err.EndOfSeasonError:
+		print('Error: Cannot sim more as you have reached the end of the season')
+		return
 
 	for matchup in games:
 		print("%s %d-%d %s" % (matchup[0], matchup[1], matchup[3], matchup[2]))
@@ -75,7 +80,7 @@ def print_table():
 
 	print(get_second_row())
 
-	for team in ss.state['teams']:
+	for team in sorted(ss.state['teams'], key=lambda team: -ss.calc_team_points(team)):
 		print(get_team_table_row(team))
 	
 
@@ -118,6 +123,20 @@ def get_team_table_row(team):
 		list_to_stringify.append(" ")
 
 	list_to_stringify.append("|")
+
+	list_to_stringify.append(str(team.results['win']).rjust(3))
+
+	list_to_stringify.append("|")
+
+	list_to_stringify.append(str(team.results['loss']).rjust(3))
+
+	list_to_stringify.append("|")
+
+	list_to_stringify.append(str(team.results['tie']).rjust(3))
+
+	list_to_stringify.append("|")
+
+	list_to_stringify.append(str(ss.calc_team_points(team)).rjust(4))
 
 	return ''.join(list_to_stringify)
 
@@ -232,8 +251,6 @@ def is_number(s):
         return True
     except ValueError:
         return False
-
-
 
 def main():
 	startup()

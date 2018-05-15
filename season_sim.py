@@ -3,6 +3,7 @@ from enum import Enum
 import team
 import random
 import season_sim_io as ss_io
+import season_sim_errors as ss_err
 
 # TODO parse args
 
@@ -16,6 +17,12 @@ state['current_week'] = 0
 # A list of games- should have home team, away team, home score, and
 # away score. Not implemented
 state['game_log'] = []
+
+state['config'] = {}
+
+state['config']['POINTS_ON_WIN'] = 3
+state['config']['POINTS_ON_LOSS'] = 0
+state['config']['POINTS_ON_TIE'] = 1
 
 class ScheduleType(Enum):
 	ROUND_ROBIN = 1
@@ -144,12 +151,16 @@ def simulate_week(schedule=None, week=None, advance=True):
 	# Default variables will lead to the simulator drawing it from the current
 	# state. Returns tuple of (home, home score, away, away score) to give the 
 	# various GUIs the ability to display the results of the week
-	
+
 	if (schedule == None):
 		schedule = state['schedule']
 
 	if (week == None):
 		week = state['current_week']
+
+	if (week > len(schedule)):
+		raise ss_err.EndOfSeasonError('Trying to simulate past end of season', None)
+		return
 
 	games = []
 
@@ -158,8 +169,7 @@ def simulate_week(schedule=None, week=None, advance=True):
 		if ('BYE' not in (home, away)):
 			games.append(simulate_matchup(state['teams'][home], state['teams'][away]))
 
-
-		if advance:
+	if advance:
 			state['current_week'] += 1
 
 	return games
@@ -220,6 +230,19 @@ def load(ssf_file_name):
 	state = ss_io.load_state("%s.ssf" % ssf_file_name)
 
 	state['active'] = True
+
+	if "config" not in state.keys():
+		# Maintain backwards compatability with saves with no config
+		state['config'] = {}
+
+		state['config']['POINTS_ON_WIN'] = 3
+		state['config']['POINTS_ON_LOSS'] = 0
+		state['config']['POINTS_ON_TIE'] = 1
+
+def calc_team_points(team):
+	return team.results['win'] * state['config']['POINTS_ON_WIN'] \
+		+ team.results['tie'] * state['config']['POINTS_ON_TIE'] \
+		+ team.results['loss'] * state['config']['POINTS_ON_LOSS']
 
 #def main():
 	#generated_schedule = schedule(5)
