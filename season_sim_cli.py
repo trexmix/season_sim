@@ -73,6 +73,8 @@ def sim_week():
 	for matchup in games:
 		print("%s %d-%d %s" % (matchup[0], matchup[1], matchup[3], matchup[2]))
 
+# Prints the current standings- need a header, second row, and then all of
+# the teams
 def print_table():
 	top_row = get_header()
 
@@ -80,6 +82,9 @@ def print_table():
 
 	print(get_second_row())
 
+	# Loop through teams twice to sort by the points, desc, and then again to 
+	# actually display them. We could redo this to sort in a better order but
+	# right now it's fine
 	for team in sorted(ss.state['teams'], key=lambda team: -ss.calc_team_points(team)):
 		print(get_team_table_row(team))
 	

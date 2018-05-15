@@ -116,7 +116,24 @@ def flip_coin(home, away):
 
 	return (1, 0) if flip == 0 else (0, 1)
 
-def simulate_matchup(home, away, simulator=flip_coin):
+def biased_proportional(home, away, bias=10):
+	home_score = 0
+	away_score = 0
+
+	for inning in range(5):
+		home_attempt = random.randint(1, (int(home.offense) + int(away.defense) + 2 * bias))
+
+		if (home_attempt <= int(home.offense) + bias):
+			home_score += 1
+
+		away_attempt = random.randint(1, (int(away.offense) + int(home.defense) + 2 * bias))
+
+		if (away_attempt <= int(away.offense) + bias):
+			away_score += 1
+
+	return (home_score, away_score)
+
+def simulate_matchup(home, away, simulator=biased_proportional):
 	'''
 	Simulates a matchup using the simulator function and updates home and away
 	team results
@@ -176,13 +193,12 @@ def simulate_week(schedule=None, week=None, advance=True):
 
 def simulate_season(schedule):
 	# Go through each week in the schedule
-	for week in range(1, len(schedule) + 1):
+	for week in range(state['current_week'], len(schedule) + 1):
 		simulate_week(schedule, week)
 
 def home_win(home, away):
 	# Basic schedule to always have the home team win for debugging
 	return (1, 0)
-
 
 # https://stackoverflow.com/questions/9457832/python-list-rotation gives this
 # function- it rotates a list n positions to the right
