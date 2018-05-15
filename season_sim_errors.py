@@ -1,3 +1,7 @@
+###############################################################################
+#  File contains all season_sim specific errors                               #     
+###############################################################################
+
 class EndOfSeasonError(Exception):
     def __init__(self, message, errors):
 

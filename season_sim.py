@@ -44,6 +44,10 @@ def startup():
 	# away score. Not implemented
 	state['game_log'] = []
 
+###############################################################################
+# Scheduling functions                                                        #
+###############################################################################
+
 def schedule(num_teams=0, type=ScheduleType.ROUND_ROBIN):
 	# TODO schedule types, validate num_teams (do we do that in this function, 
 	# or a higher one?)
@@ -110,6 +114,10 @@ def round_robin_schedule(num_teams):
 	state['schedule'] = schedule
 	return schedule
 
+###############################################################################
+# Various simulators                                                          #
+###############################################################################
+
 # A basic matchup simulator
 def flip_coin(home, away):
 	flip = random.randint(0, 1)
@@ -132,6 +140,14 @@ def biased_proportional(home, away, bias=10):
 			away_score += 1
 
 	return (home_score, away_score)
+
+def home_win(home, away):
+	# Basic schedule to always have the home team win for debugging
+	return (1, 0)
+
+###############################################################################
+# Levels of simulation- matchup, week, seaons                                 #
+###############################################################################
 
 def simulate_matchup(home, away, simulator=biased_proportional):
 	'''
@@ -191,14 +207,19 @@ def simulate_week(schedule=None, week=None, advance=True):
 
 	return games
 
-def simulate_season(schedule):
+def simulate_season(schedule=None):
 	# Go through each week in the schedule
-	for week in range(state['current_week'], len(schedule) + 1):
-		simulate_week(schedule, week)
+	if (schedule == None):
+		schedule = state['schedule']
 
-def home_win(home, away):
-	# Basic schedule to always have the home team win for debugging
-	return (1, 0)
+	games = []
+
+	for week in range(state['current_week'], len(schedule) + 1):
+		games.append(simulate_week(schedule, week))
+
+###############################################################################
+# Utilities                                                                   #
+###############################################################################
 
 # https://stackoverflow.com/questions/9457832/python-list-rotation gives this
 # function- it rotates a list n positions to the right
@@ -235,6 +256,15 @@ def init_league():
 	state['active'] = True
 	state['current_week'] = 1
 
+def calc_team_points(team):
+	return team.results['win'] * state['config']['POINTS_ON_WIN'] \
+		+ team.results['tie'] * state['config']['POINTS_ON_TIE'] \
+		+ team.results['loss'] * state['config']['POINTS_ON_LOSS']
+
+###############################################################################
+# I/O Wrappers                                                                #
+###############################################################################
+
 def save(save_name):
 	ss_io.save_state(state, "%s.ssf" % save_name)
 
@@ -254,18 +284,3 @@ def load(ssf_file_name):
 		state['config']['POINTS_ON_WIN'] = 3
 		state['config']['POINTS_ON_LOSS'] = 0
 		state['config']['POINTS_ON_TIE'] = 1
-
-def calc_team_points(team):
-	return team.results['win'] * state['config']['POINTS_ON_WIN'] \
-		+ team.results['tie'] * state['config']['POINTS_ON_TIE'] \
-		+ team.results['loss'] * state['config']['POINTS_ON_LOSS']
-
-#def main():
-	#generated_schedule = schedule(5)
-	#print(generated_schedule)
-
-if __name__ == "__main__":
-    # execute only if run as a script
-    main()
-
-

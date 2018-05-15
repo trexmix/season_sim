@@ -62,6 +62,12 @@ def idle():
 			else:
 				print("No active league to show standings for")
 
+		if cmd == "r" or cmd == "rest of season":
+			if is_active_league():
+				sim_rest_of_season()
+			else:
+				print("No active league to simulate")
+
 # Simulates games and then prints the output
 def sim_week():
 	try:
@@ -72,6 +78,12 @@ def sim_week():
 
 	for matchup in games:
 		print("%s %d-%d %s" % (matchup[0], matchup[1], matchup[3], matchup[2]))
+
+def sim_rest_of_season():
+	games = ss.simulate_season()
+
+	#for matchup in games:
+		#print("%s %d-%d %s" % (matchup[0], matchup[1], matchup[3], matchup[2]))
 
 # Prints the current standings- need a header, second row, and then all of
 # the teams
